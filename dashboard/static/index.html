@@ -2,37 +2,58 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
   <title>Rahil's Job Dashboard</title>
   <link rel="stylesheet" href="/static/styles.css" />
 </head>
 <body>
+
+  <!-- Mobile top bar -->
+  <div class="mobile-bar">
+    <button class="hamburger" onclick="toggleSidebar()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <span class="mobile-title">Job Dashboard</span>
+    <div class="notif-bell-wrap" onclick="showTab('setup'); switchSetupSection('notifications')">
+      <span class="notif-bell">&#128276;</span>
+      <span class="notif-badge" id="notif-badge" style="display:none"></span>
+    </div>
+  </div>
+
+  <!-- Sidebar overlay (mobile) -->
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
   <div class="layout">
     <!-- Sidebar -->
-    <aside class="sidebar">
+    <aside class="sidebar" id="sidebar">
       <div class="sidebar-header">
         <div class="avatar">RC</div>
         <div>
           <div class="sidebar-name">Rahil Chadha</div>
           <div class="sidebar-sub">Job Dashboard</div>
         </div>
+        <button class="sidebar-close" onclick="closeSidebar()">&#10005;</button>
       </div>
 
       <nav class="sidebar-nav">
-        <a class="nav-item active" data-tab="overview" onclick="showTab('overview')">
+        <a class="nav-item active" data-tab="overview"  onclick="showTab('overview')">
           <span class="nav-icon">&#9732;</span> Overview
         </a>
-        <a class="nav-item" data-tab="jobs" onclick="showTab('jobs')">
+        <a class="nav-item" data-tab="jobs"     onclick="showTab('jobs')">
           <span class="nav-icon">&#128196;</span> Jobs
         </a>
-        <a class="nav-item" data-tab="coffee" onclick="showTab('coffee')">
+        <a class="nav-item" data-tab="coffee"   onclick="showTab('coffee')">
           <span class="nav-icon">&#9749;</span> Coffee Chats
         </a>
-        <a class="nav-item" data-tab="emails" onclick="showTab('emails')">
+        <a class="nav-item" data-tab="emails"   onclick="showTab('emails')">
           <span class="nav-icon">&#9993;</span> Email Outreach
         </a>
-        <a class="nav-item" data-tab="resume" onclick="showTab('resume')">
+        <a class="nav-item" data-tab="resume"   onclick="showTab('resume')">
           <span class="nav-icon">&#128221;</span> Resume Builder
+        </a>
+        <a class="nav-item" data-tab="setup"    onclick="showTab('setup')">
+          <span class="nav-icon">&#9881;</span> Job Setup
+          <span class="nav-badge" id="nav-notif-badge" style="display:none"></span>
         </a>
       </nav>
 
@@ -43,13 +64,13 @@
 
     <!-- Main Content -->
     <main class="main">
-      <!-- Overview Tab -->
+
+      <!-- ═══ OVERVIEW ═══════════════════════════════════════════ -->
       <div id="tab-overview" class="tab-content active">
         <div class="page-header">
           <h1>Overview</h1>
-          <button class="btn btn-primary" onclick="refreshAllStatuses()">&#8635; Refresh Workday Statuses</button>
+          <button class="btn btn-primary" onclick="refreshAllStatuses()">&#8635; Refresh Statuses</button>
         </div>
-
         <div class="stats-grid">
           <div class="stat-card">
             <div class="stat-number" id="stat-total-jobs">--</div>
@@ -68,7 +89,6 @@
             <div class="stat-label">Follow-ups Due</div>
           </div>
         </div>
-
         <div class="grid-2">
           <div class="card">
             <div class="card-header">
@@ -77,7 +97,6 @@
             </div>
             <div id="recent-jobs-list"></div>
           </div>
-
           <div class="card">
             <div class="card-header">
               <h3>Coffee Chat Follow-ups</h3>
@@ -86,125 +105,88 @@
             <div id="upcoming-followups-list"></div>
           </div>
         </div>
-
         <div class="card" style="margin-top:1.5rem">
           <div class="card-header"><h3>Application Pipeline</h3></div>
           <div class="pipeline" id="pipeline-view"></div>
         </div>
       </div>
 
-      <!-- Jobs Tab -->
+      <!-- ═══ JOBS ════════════════════════════════════════════════ -->
       <div id="tab-jobs" class="tab-content">
         <div class="page-header">
           <h1>Job Applications</h1>
           <div class="btn-group">
-            <button class="btn btn-secondary" onclick="refreshAllStatuses()">&#8635; Check All Statuses</button>
+            <button class="btn btn-secondary" onclick="refreshAllStatuses()">&#8635; Check All</button>
             <button class="btn btn-primary" onclick="openJobModal()">+ Add Job</button>
           </div>
         </div>
-
         <div class="filter-bar">
           <input type="text" id="job-search" placeholder="Search company or title..." oninput="filterJobs()" class="search-input" />
           <select id="job-status-filter" onchange="filterJobs()" class="filter-select">
             <option value="">All Statuses</option>
-            <option>To Apply</option>
-            <option>Applied</option>
-            <option>Phone Screen</option>
-            <option>Interview</option>
-            <option>Offer</option>
-            <option>Rejected</option>
-            <option>Withdrawn</option>
+            <option>To Apply</option><option>Applied</option><option>Phone Screen</option>
+            <option>Interview</option><option>Offer</option><option>Rejected</option><option>Withdrawn</option>
           </select>
         </div>
-
         <div class="table-wrap">
-          <table class="data-table" id="jobs-table">
-            <thead>
-              <tr>
-                <th>Company</th>
-                <th>Role</th>
-                <th>Status</th>
-                <th>Location</th>
-                <th>Date Applied</th>
-                <th>Last Check</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
+          <table class="data-table">
+            <thead><tr>
+              <th>Company</th><th>Role</th><th>Status</th>
+              <th class="hide-sm">Location</th><th class="hide-sm">Applied</th>
+              <th class="hide-sm">Last Check</th><th>Actions</th>
+            </tr></thead>
             <tbody id="jobs-tbody"></tbody>
           </table>
         </div>
       </div>
 
-      <!-- Coffee Chats Tab -->
+      <!-- ═══ COFFEE CHATS ════════════════════════════════════════ -->
       <div id="tab-coffee" class="tab-content">
         <div class="page-header">
           <h1>Coffee Chats</h1>
-          <button class="btn btn-primary" onclick="openChatModal()">+ Add Coffee Chat</button>
+          <button class="btn btn-primary" onclick="openChatModal()">+ Add</button>
         </div>
-
         <div class="filter-bar">
           <input type="text" id="chat-search" placeholder="Search name or company..." oninput="filterChats()" class="search-input" />
           <select id="chat-status-filter" onchange="filterChats()" class="filter-select">
             <option value="">All Statuses</option>
-            <option>To Reach Out</option>
-            <option>Message Sent</option>
-            <option>Scheduled</option>
-            <option>Completed</option>
-            <option>Follow Up</option>
-            <option>No Response</option>
+            <option>To Reach Out</option><option>Message Sent</option><option>Scheduled</option>
+            <option>Completed</option><option>Follow Up</option><option>No Response</option>
           </select>
         </div>
-
         <div class="table-wrap">
           <table class="data-table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Company</th>
-                <th>Role</th>
-                <th>Status</th>
-                <th>Next Action</th>
-                <th>Follow-up</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
+            <thead><tr>
+              <th>Name</th><th>Company</th><th class="hide-sm">Role</th>
+              <th>Status</th><th class="hide-sm">Next Action</th>
+              <th class="hide-sm">Follow-up</th><th>Actions</th>
+            </tr></thead>
             <tbody id="chats-tbody"></tbody>
           </table>
         </div>
       </div>
 
-      <!-- Email Tab -->
+      <!-- ═══ EMAILS ══════════════════════════════════════════════ -->
       <div id="tab-emails" class="tab-content">
         <div class="page-header">
           <h1>Email Outreach</h1>
-          <button class="btn btn-primary" onclick="openEmailModal()">+ Add Email</button>
+          <button class="btn btn-primary" onclick="openEmailModal()">+ Add</button>
         </div>
-
         <div class="table-wrap">
           <table class="data-table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Company</th>
-                <th>Subject</th>
-                <th>Status</th>
-                <th>Sent</th>
-                <th>Follow-up</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
+            <thead><tr>
+              <th>Name</th><th class="hide-sm">Email</th><th>Company</th>
+              <th class="hide-sm">Subject</th><th>Status</th>
+              <th class="hide-sm">Sent</th><th class="hide-sm">Follow-up</th><th>Actions</th>
+            </tr></thead>
             <tbody id="emails-tbody"></tbody>
           </table>
         </div>
       </div>
 
-      <!-- Resume Builder Tab -->
+      <!-- ═══ RESUME BUILDER ══════════════════════════════════════ -->
       <div id="tab-resume" class="tab-content">
-        <div class="page-header">
-          <h1>Resume Builder & Tailor</h1>
-        </div>
-
+        <div class="page-header"><h1>Resume Builder & Tailor</h1></div>
         <div class="grid-2">
           <div class="card">
             <div class="card-header"><h3>Base Resume</h3></div>
@@ -213,15 +195,14 @@
               <input type="text" id="resume-name" placeholder="e.g. Software Engineer Resume" class="form-control" />
             </div>
             <div class="form-group">
-              <label>Resume Content (paste text or markdown)</label>
+              <label>Resume Content (paste text)</label>
               <textarea id="resume-content" rows="15" class="form-control" placeholder="Paste your resume here..."></textarea>
             </div>
             <div class="btn-group">
-              <button class="btn btn-secondary" onclick="loadBaseResume()">Load Saved Resume</button>
-              <button class="btn btn-primary" onclick="saveResume()">Save as Base Resume</button>
+              <button class="btn btn-secondary" onclick="loadBaseResume()">Load Saved</button>
+              <button class="btn btn-primary" onclick="saveResume()">Save as Base</button>
             </div>
           </div>
-
           <div class="card">
             <div class="card-header"><h3>AI Tailor to Job</h3></div>
             <div class="form-group">
@@ -229,29 +210,90 @@
               <textarea id="jd-input" rows="10" class="form-control" placeholder="Paste the job description here..."></textarea>
             </div>
             <div class="form-group">
-              <label>Apply to Job (optional)</label>
+              <label>Link to Job (optional)</label>
               <select id="tailor-job-select" class="form-control">
-                <option value="">-- Select job to link --</option>
+                <option value="">-- Select job --</option>
               </select>
             </div>
-            <button class="btn btn-primary" onclick="tailorResume()" style="width:100%">&#10024; Tailor Resume with AI</button>
-            <div id="tailor-result" class="tailor-result" style="display:none">
-              <div class="card-header" style="margin-top:1rem"><h4>Tailored Resume</h4></div>
+            <button class="btn btn-primary" onclick="tailorResume()" style="width:100%">&#10024; Tailor with AI</button>
+            <div id="tailor-result" style="display:none;margin-top:1rem">
+              <div class="card-header"><h4>Tailored Resume</h4></div>
               <pre id="tailored-text" class="resume-pre"></pre>
               <button class="btn btn-secondary" onclick="copyTailored()">&#128203; Copy</button>
             </div>
           </div>
         </div>
       </div>
+
+      <!-- ═══ JOB SETUP ════════════════════════════════════════════ -->
+      <div id="tab-setup" class="tab-content">
+        <div class="page-header"><h1>Job Setup</h1></div>
+
+        <!-- Setup sub-tabs -->
+        <div class="setup-tabs">
+          <button class="setup-tab active" data-section="notifications" onclick="switchSetupSection('notifications')">
+            &#128276; Notifications
+            <span class="notif-count-badge" id="notif-count-inline" style="display:none"></span>
+          </button>
+          <button class="setup-tab" data-section="questions" onclick="switchSetupSection('questions')">
+            &#10067; Application Questions
+          </button>
+          <button class="setup-tab" data-section="passwords" onclick="switchSetupSection('passwords')">
+            &#128274; Passwords
+          </button>
+        </div>
+
+        <!-- ── Notifications section ── -->
+        <div id="setup-notifications" class="setup-section">
+          <div class="card" style="margin-top:1rem">
+            <div class="card-header">
+              <h3>Notifications</h3>
+              <button class="btn btn-sm btn-secondary" onclick="markAllRead()">Mark All Read</button>
+            </div>
+            <div id="notifications-list">
+              <div class="empty-state">No notifications yet.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Questions section ── -->
+        <div id="setup-questions" class="setup-section" style="display:none">
+          <div class="card" style="margin-top:1rem">
+            <div class="card-header">
+              <h3>Application Questions</h3>
+              <button class="btn btn-primary" onclick="saveAllAnswers()">Save All Answers</button>
+            </div>
+            <p class="section-hint">Fill these in once — they'll be used to auto-fill every job application.</p>
+            <div id="questions-form"></div>
+          </div>
+        </div>
+
+        <!-- ── Passwords section ── -->
+        <div id="setup-passwords" class="setup-section" style="display:none">
+          <div class="card" style="margin-top:1rem">
+            <div class="card-header">
+              <h3>Workday Passwords</h3>
+              <button class="btn btn-primary" onclick="openCredModal()">+ Add Password</button>
+            </div>
+            <p class="section-hint">Store one password per company. When you apply, the matching password is used automatically. Passwords are encrypted in the local database.</p>
+            <div id="credentials-list"></div>
+          </div>
+        </div>
+      </div>
+
     </main>
   </div>
 
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       MODALS
+  ═══════════════════════════════════════════════════════════════════════════ -->
+
   <!-- JOB MODAL -->
-  <div id="job-modal" class="modal-overlay" onclick="closeJobModal(event)">
+  <div id="job-modal" class="modal-overlay" onclick="closeModal('job-modal', event)">
     <div class="modal" onclick="event.stopPropagation()">
       <div class="modal-header">
         <h2 id="job-modal-title">Add Job Application</h2>
-        <button class="modal-close" onclick="closeJobModal()">&times;</button>
+        <button class="modal-close" onclick="closeModal('job-modal')">&times;</button>
       </div>
       <div class="modal-body">
         <input type="hidden" id="job-id" />
@@ -268,7 +310,7 @@
         <div class="form-row">
           <div class="form-group">
             <label>Job Posting URL</label>
-            <input type="url" id="job-url" class="form-control" placeholder="https://..." />
+            <input type="url" id="job-url" class="form-control" placeholder="https://linkedin.com/jobs/..." />
           </div>
           <div class="form-group">
             <label>Workday Application URL</label>
@@ -279,13 +321,8 @@
           <div class="form-group">
             <label>Status</label>
             <select id="job-status" class="form-control">
-              <option>To Apply</option>
-              <option>Applied</option>
-              <option>Phone Screen</option>
-              <option>Interview</option>
-              <option>Offer</option>
-              <option>Rejected</option>
-              <option>Withdrawn</option>
+              <option>To Apply</option><option>Applied</option><option>Phone Screen</option>
+              <option>Interview</option><option>Offer</option><option>Rejected</option><option>Withdrawn</option>
             </select>
           </div>
           <div class="form-group">
@@ -296,81 +333,107 @@
         <div class="form-row">
           <div class="form-group">
             <label>Salary Range</label>
-            <input type="text" id="job-salary" class="form-control" placeholder="$90k - $120k" />
+            <input type="text" id="job-salary" class="form-control" placeholder="$90k – $120k" />
           </div>
           <div class="form-group">
             <label>Source</label>
             <select id="job-source" class="form-control">
-              <option>LinkedIn</option>
-              <option>Manual</option>
-              <option>Referral</option>
-              <option>Company Website</option>
-              <option>Indeed</option>
-              <option>Other</option>
+              <option>LinkedIn</option><option>Manual</option><option>Referral</option>
+              <option>Company Website</option><option>Indeed</option><option>Other</option>
             </select>
           </div>
         </div>
         <div class="form-group">
-          <label>Job Description</label>
-          <textarea id="job-description" rows="4" class="form-control" placeholder="Paste job description for resume tailoring..."></textarea>
+          <label>Job Description (for resume tailoring)</label>
+          <textarea id="job-description" rows="4" class="form-control" placeholder="Paste job description..."></textarea>
         </div>
         <div class="form-group">
           <label>Notes</label>
-          <textarea id="job-notes" rows="2" class="form-control" placeholder="Referral contact, hiring manager, etc."></textarea>
+          <textarea id="job-notes" rows="2" class="form-control" placeholder="Referral contact, hiring manager..."></textarea>
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-secondary" onclick="closeJobModal()">Cancel</button>
-        <button class="btn btn-outline" onclick="saveJobAndApply()" id="apply-btn" style="display:none">&#9654; Save & Apply via Workday</button>
+        <button class="btn btn-secondary" onclick="closeModal('job-modal')">Cancel</button>
+        <button class="btn btn-outline" id="apply-now-btn" onclick="triggerApply()" style="display:none">&#9654; Apply via Workday</button>
         <button class="btn btn-primary" onclick="saveJob()">Save</button>
       </div>
     </div>
   </div>
 
+  <!-- APPLY PASSWORD MODAL -->
+  <div id="apply-modal" class="modal-overlay" onclick="closeModal('apply-modal', event)">
+    <div class="modal modal-sm" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Apply to <span id="apply-company-name"></span></h2>
+        <button class="modal-close" onclick="closeModal('apply-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="apply-job-id" />
+        <p class="section-hint" style="margin-bottom:1rem">
+          Enter your Workday password for this company. If you have a saved password in Job Setup, it will be used automatically.
+        </p>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="apply-email" class="form-control" placeholder="rahilchadha1@gmail.com" />
+        </div>
+        <div class="form-group">
+          <label>Workday Password for this company</label>
+          <div class="password-wrap">
+            <input type="password" id="apply-password" class="form-control" placeholder="Enter password (or leave blank to use saved)" />
+            <button class="pwd-toggle" onclick="togglePwd('apply-password')" type="button">&#128065;</button>
+          </div>
+        </div>
+        <div class="info-box">
+          <strong>&#128274; New account?</strong> Leave password blank to auto-create an account using your saved email. Make sure your Application Questions are filled in under Job Setup.
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('apply-modal')">Cancel</button>
+        <button class="btn btn-primary" onclick="confirmApply()">&#9654; Apply Now</button>
+      </div>
+    </div>
+  </div>
+
   <!-- COFFEE CHAT MODAL -->
-  <div id="chat-modal" class="modal-overlay" onclick="closeChatModal(event)">
+  <div id="chat-modal" class="modal-overlay" onclick="closeModal('chat-modal', event)">
     <div class="modal" onclick="event.stopPropagation()">
       <div class="modal-header">
         <h2 id="chat-modal-title">Add Coffee Chat</h2>
-        <button class="modal-close" onclick="closeChatModal()">&times;</button>
+        <button class="modal-close" onclick="closeModal('chat-modal')">&times;</button>
       </div>
       <div class="modal-body">
         <input type="hidden" id="chat-id" />
         <div class="form-row">
           <div class="form-group">
             <label>Person Name *</label>
-            <input type="text" id="chat-name" class="form-control" placeholder="Jane Smith" />
+            <input type="text" id="chat-name" class="form-control" />
           </div>
           <div class="form-group">
             <label>Company</label>
-            <input type="text" id="chat-company" class="form-control" placeholder="Google" />
+            <input type="text" id="chat-company" class="form-control" />
           </div>
         </div>
         <div class="form-row">
           <div class="form-group">
             <label>Their Role</label>
-            <input type="text" id="chat-role" class="form-control" placeholder="Senior Engineer" />
+            <input type="text" id="chat-role" class="form-control" />
           </div>
           <div class="form-group">
             <label>Status</label>
             <select id="chat-status" class="form-control">
-              <option>To Reach Out</option>
-              <option>Message Sent</option>
-              <option>Scheduled</option>
-              <option>Completed</option>
-              <option>Follow Up</option>
-              <option>No Response</option>
+              <option>To Reach Out</option><option>Message Sent</option><option>Scheduled</option>
+              <option>Completed</option><option>Follow Up</option><option>No Response</option>
             </select>
           </div>
         </div>
         <div class="form-row">
           <div class="form-group">
             <label>LinkedIn URL</label>
-            <input type="url" id="chat-linkedin" class="form-control" placeholder="https://linkedin.com/in/..." />
+            <input type="url" id="chat-linkedin" class="form-control" />
           </div>
           <div class="form-group">
             <label>Email</label>
-            <input type="email" id="chat-email" class="form-control" placeholder="jane@google.com" />
+            <input type="email" id="chat-email" class="form-control" />
           </div>
         </div>
         <div class="form-row">
@@ -389,58 +452,55 @@
         </div>
         <div class="form-group">
           <label>Notes</label>
-          <textarea id="chat-notes" rows="2" class="form-control" placeholder="How you know them, topics to discuss..."></textarea>
+          <textarea id="chat-notes" rows="2" class="form-control"></textarea>
         </div>
         <div class="form-group">
           <label>Meeting Notes</label>
-          <textarea id="chat-meeting-notes" rows="3" class="form-control" placeholder="Key takeaways from the coffee chat..."></textarea>
+          <textarea id="chat-meeting-notes" rows="3" class="form-control" placeholder="Key takeaways..."></textarea>
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-secondary" onclick="closeChatModal()">Cancel</button>
+        <button class="btn btn-secondary" onclick="closeModal('chat-modal')">Cancel</button>
         <button class="btn btn-primary" onclick="saveChat()">Save</button>
       </div>
     </div>
   </div>
 
   <!-- EMAIL MODAL -->
-  <div id="email-modal" class="modal-overlay" onclick="closeEmailModal(event)">
+  <div id="email-modal" class="modal-overlay" onclick="closeModal('email-modal', event)">
     <div class="modal" onclick="event.stopPropagation()">
       <div class="modal-header">
         <h2 id="email-modal-title">Add Email Outreach</h2>
-        <button class="modal-close" onclick="closeEmailModal()">&times;</button>
+        <button class="modal-close" onclick="closeModal('email-modal')">&times;</button>
       </div>
       <div class="modal-body">
         <input type="hidden" id="email-id" />
         <div class="form-row">
           <div class="form-group">
             <label>Recipient Name *</label>
-            <input type="text" id="email-recipient-name" class="form-control" placeholder="John Doe" />
+            <input type="text" id="email-recipient-name" class="form-control" />
           </div>
           <div class="form-group">
             <label>Recipient Email *</label>
-            <input type="email" id="email-recipient-email" class="form-control" placeholder="john@company.com" />
+            <input type="email" id="email-recipient-email" class="form-control" />
           </div>
         </div>
         <div class="form-row">
           <div class="form-group">
             <label>Company</label>
-            <input type="text" id="email-company" class="form-control" placeholder="Company name" />
+            <input type="text" id="email-company" class="form-control" />
           </div>
           <div class="form-group">
             <label>Status</label>
             <select id="email-status" class="form-control">
-              <option>Draft</option>
-              <option>Sent</option>
-              <option>Replied</option>
-              <option>Follow Up</option>
-              <option>No Response</option>
+              <option>Draft</option><option>Sent</option><option>Replied</option>
+              <option>Follow Up</option><option>No Response</option>
             </select>
           </div>
         </div>
         <div class="form-group">
           <label>Subject</label>
-          <input type="text" id="email-subject" class="form-control" placeholder="Informational Interview Request - Rahil Chadha" />
+          <input type="text" id="email-subject" class="form-control" />
         </div>
         <div class="form-row">
           <div class="form-group">
@@ -454,7 +514,7 @@
         </div>
         <div class="form-group">
           <label>Email Body</label>
-          <textarea id="email-body" rows="5" class="form-control" placeholder="Paste email content here..."></textarea>
+          <textarea id="email-body" rows="5" class="form-control"></textarea>
         </div>
         <div class="form-group">
           <label>Notes</label>
@@ -462,13 +522,53 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-secondary" onclick="closeEmailModal()">Cancel</button>
+        <button class="btn btn-secondary" onclick="closeModal('email-modal')">Cancel</button>
         <button class="btn btn-primary" onclick="saveEmail()">Save</button>
       </div>
     </div>
   </div>
 
-  <!-- Toast Notification -->
+  <!-- CREDENTIAL MODAL -->
+  <div id="cred-modal" class="modal-overlay" onclick="closeModal('cred-modal', event)">
+    <div class="modal modal-sm" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h2 id="cred-modal-title">Add Workday Password</h2>
+        <button class="modal-close" onclick="closeModal('cred-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="cred-id" />
+        <div class="form-group">
+          <label>Company Name *</label>
+          <input type="text" id="cred-company" class="form-control" placeholder="Google" />
+        </div>
+        <div class="form-group">
+          <label>Workday Domain</label>
+          <input type="text" id="cred-domain" class="form-control" placeholder="google.wd5.myworkdayjobs.com" />
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="cred-email" class="form-control" placeholder="rahilchadha1@gmail.com" />
+        </div>
+        <div class="form-group">
+          <label>Password *</label>
+          <div class="password-wrap">
+            <input type="password" id="cred-password" class="form-control" />
+            <button class="pwd-toggle" onclick="togglePwd('cred-password')" type="button">&#128065;</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Notes</label>
+          <textarea id="cred-notes" rows="2" class="form-control" placeholder="Account created on, etc."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('cred-modal')">Cancel</button>
+        <button class="btn btn-primary" onclick="saveCredential()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
   <div id="toast" class="toast"></div>
 
   <script src="/static/app.js"></script>
