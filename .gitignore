@@ -47,3 +47,10 @@ po/*~
 
 # RStudio Connect folder
 rsconnect/
+
+# Job Dashboard - sensitive/generated files
+dashboard/.env
+dashboard/jobs.db
+dashboard/__pycache__/
+dashboard/automation/__pycache__/
+dashboard/*.pyc
